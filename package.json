@@ -1,0 +1,11 @@
+{
+    "name": "azure-thesis",
+    "devDependencies": {
+        "@types/node": "^10.0.0"
+    },
+    "dependencies": {
+        "@pulumi/azure": "^3.0.0",
+        "@pulumi/pulumi": "^2.0.0",
+        "@pulumi/random": "^2.1.3"
+    }
+}
