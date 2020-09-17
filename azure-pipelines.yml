@@ -47,7 +47,6 @@ stages:
     jobs:
       - deployment: deployFrontendAndBackend
         displayName: Deploy frontend and backend
-        dependsOn: infrastructure
         environment: dev
         strategy:
           runOnce:
