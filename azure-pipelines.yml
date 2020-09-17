@@ -28,14 +28,14 @@ stages:
               azureSubscription: "Azure thesis resource manager"
               command: "preview"
               cwd: "/"
-              stack: "$(STACK)"
+              stack: "$()"
 
   - stage: deploy
     displayName: Apply infra (Pulumi up)
     dependsOn: preview
+    condition: 
     jobs:
       - job: infrastructure
-
         pool:
           vmImage: "ubuntu-16.04"
         steps:
@@ -45,9 +45,9 @@ stages:
             displayName: "Install pulumi and run pulumi up"
             name: pulumi
             env:
-              PULUMI_ACCESS_TOKEN: $(PULUMI_ACCESS_TOKEN)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
+              PULUMI_ACCESS_TOKEN: $(common.PULUMI_ACCESS_TOKEN)
+              ARM_CLIENT_ID: $(common.ARM_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(common.ARM_CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(common.ARM_SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(common.ARM_TENANT_ID)
               STACK: $(STACK)
