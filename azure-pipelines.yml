@@ -13,10 +13,10 @@ pool:
   vmImage: "ubuntu-latest"
 
 variables:
-  ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'), endsWith($('System.PullRequest.TargetBranch']), 'develop') ) }}:
+  ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'), endsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/develop') ) }}:
     STACK: dev
     ENVIRONMENT: infra-dev
-  ${{if or(eq(variables['Build.SourceBranchName'], 'master'), endsWith($('System.PullRequest.TargetBranch'), 'master') ) }}:
+  ${{if or(eq(variables['Build.SourceBranchName'], 'master'), endsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/master') ) }}:
     STACK: prod
     ENVIRONMENT: infra-prod
   
