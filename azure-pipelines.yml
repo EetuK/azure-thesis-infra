@@ -46,7 +46,7 @@ stages:
   - stage: deploy
     displayName: Apply infra (pulumi up)
     dependsOn: preview
-    condition: eq(${{variables.isDeployBranch}}, true)
+    condition: $[eq(${{variables.isDeployBranch}}, true)]
     variables:
       - group: common
     jobs:
