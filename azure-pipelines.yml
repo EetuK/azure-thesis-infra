@@ -11,9 +11,9 @@ pool:
 
 variables:
   ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'), endsWith(variables['System.PullRequest.TargetBranch'], 'develop') ) }}:
-  STACK: dev
+    STACK: dev
   ${{if or(eq(variables['Build.SourceBranchName'], 'master'), endsWith(variables['System.PullRequest.TargetBranch'], 'master') ) }}:
-  STACK: prod
+    STACK: prod
   
 
 
