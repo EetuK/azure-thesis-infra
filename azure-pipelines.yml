@@ -19,6 +19,7 @@ variables:
   ${{if or(eq(variables['Build.SourceBranchName'], 'master'), endsWith(variables['System.PullRequest.TargetBranch'], 'master') ) }}:
     STACK: prod
     ENVIRONMENT: infra-prod
+  isDeployBranch: $[or(eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )]
 
 stages:
   - stage: preview
@@ -30,7 +31,6 @@ stages:
         displayName: Preview infra (pulumi)
         cancelTimeoutInMinutes: 7
         steps:
-          - script: echo ${{variables.STACK}}
           - task: Npm@1
             displayName: Pulumi npm install
             inputs:
@@ -45,6 +45,7 @@ stages:
   - stage: deploy
     displayName: Apply infra (pulumi up)
     dependsOn: preview
+    condition: eq(${{variables.isDeployBranch}}, true)
     variables:
       - group: common
     jobs:
