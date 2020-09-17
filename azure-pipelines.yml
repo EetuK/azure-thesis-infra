@@ -34,7 +34,7 @@ stages:
           - script: | 
               echo ${{variables.STACK}}
               echo ${{variables.ENVIRONMENT}}
-              echo $(SHIT)
+              echo $SHIT
               echo $(Build.SourceBranchName)
             env:
               SHIT: $(System.PullRequest.TargetBranch)
