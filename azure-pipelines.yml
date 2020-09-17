@@ -13,7 +13,6 @@ pool:
   vmImage: "ubuntu-latest"
 
 variables:
-  isDeployBranch: $[or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )]
   ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'), endsWith(variables['System.PullRequest.TargetBranch'], 'develop') ) }}:
     STACK: dev
     ENVIRONMENT: infra-dev
@@ -46,6 +45,7 @@ stages:
   - stage: deploy
     displayName: Apply infra (pulumi up)
     dependsOn: preview
+    condition: $[or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )]
     variables:
       - group: common
     jobs:
