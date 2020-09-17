@@ -27,7 +27,7 @@ stages:
         displayName: Preview infra (pulumi)
         cancelTimeoutInMinutes: 7
         steps:
-          - script: echo ${{variables.stageName}}
+          - script: echo ${{variables.STACK}}
           - task: Npm@1
             displayName: infra - npm install
             inputs:
@@ -39,7 +39,7 @@ stages:
               azureSubscription: "Azure thesis resource manager"
               command: "preview"
               cwd: "/"
-              stack: "$(STACK)"
+              stack: "$(variables.STACK)"
 
   - stage: deploy
     displayName: Apply infra (Pulumi up)
@@ -62,4 +62,4 @@ stages:
               ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
               ARM_TENANT_ID: $(ARM_TENANT_ID)
-              STACK: $(STACK)
+              STACK: $(variables.STACK)
