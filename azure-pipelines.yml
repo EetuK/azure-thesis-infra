@@ -34,8 +34,8 @@ stages:
           - script: | 
               echo ${{variables.STACK}}
               echo ${{variables.ENVIRONMENT}}
-              echo ${{System.PullRequest.TargetBranch}}
-              echo ${{Build.SourceBranchName}}
+              echo $(System.PullRequest.TargetBranch)
+              echo $(Build.SourceBranchName)
           - task: Npm@1
             displayName: Pulumi npm install
             inputs:
