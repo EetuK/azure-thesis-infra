@@ -45,19 +45,40 @@ stages:
     variables:
       - group: common
     jobs:
-      - job: infrastructure
-        pool:
-          vmImage: "ubuntu-16.04"
-        steps:
-          - script: |
-              chmod +x scripts/*.sh
-              ./scripts/run-pulumi.sh
-            displayName: "Install pulumi and run pulumi up"
-            name: pulumi
-            env:
-              PULUMI_ACCESS_TOKEN: $(PULUMI_ACCESS_TOKEN)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
-              STACK: ${{variables.STACK}}
+      - deployment: deployFrontendAndBackend
+        displayName: Deploy frontend and backend
+        dependsOn: infrastructure
+        environment: dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: |
+                    chmod +x scripts/*.sh
+                    ./scripts/run-pulumi.sh
+                  displayName: "Install pulumi and run pulumi up"
+                  name: pulumi
+                  env:
+                    PULUMI_ACCESS_TOKEN: $(PULUMI_ACCESS_TOKEN)
+                    ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                    ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                    ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                    ARM_TENANT_ID: $(ARM_TENANT_ID)
+                    STACK: ${{variables.STACK}}
+        
+#      - job: infrastructure
+#        pool:
+#          vmImage: "ubuntu-16.04"
+#        steps:
+#          - script: |
+#              chmod +x scripts/*.sh
+#              ./scripts/run-pulumi.sh
+#            displayName: "Install pulumi and run pulumi up"
+#            name: pulumi
+#           env:
+#              PULUMI_ACCESS_TOKEN: $(PULUMI_ACCESS_TOKEN)
+#              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+#              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+#              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+#              ARM_TENANT_ID: $(ARM_TENANT_ID)
+#              STACK: ${{variables.STACK}}
