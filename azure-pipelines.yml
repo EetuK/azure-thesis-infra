@@ -52,6 +52,11 @@ stages:
           runOnce:
             deploy:
               steps:
+                - checkout: self
+                - script: |
+                    ls
+                    cd scripts
+                    ls
                 - script: |
                     chmod +x ./scripts/*.sh
                     ./scripts/run-pulumi.sh
