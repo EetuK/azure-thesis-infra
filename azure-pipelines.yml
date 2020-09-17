@@ -15,9 +15,10 @@ pool:
 variables:
   ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'), endsWith(variables['System.PullRequest.TargetBranch'], 'develop') ) }}:
     STACK: dev
+    ENVIRONMENT: infra-dev
   ${{if or(eq(variables['Build.SourceBranchName'], 'master'), endsWith(variables['System.PullRequest.TargetBranch'], 'master') ) }}:
     STACK: prod
-  
+    ENVIRONMENT: infra-prod
 
 stages:
   - stage: preview
@@ -49,7 +50,7 @@ stages:
     jobs:
       - deployment: deployFrontendAndBackend
         displayName: Deploy frontend and backend
-        environment: dev
+        environment: ${{variables.ENVIRONMENT}}
         strategy:
           runOnce:
             deploy:
