@@ -39,7 +39,7 @@ stages:
               azureSubscription: "Azure thesis resource manager"
               command: "preview"
               cwd: "/"
-              stack: "$(variables.STACK)"
+              stack: ${{variables.STACK}}
 
   - stage: deploy
     displayName: Apply infra (Pulumi up)
@@ -62,4 +62,4 @@ stages:
               ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
               ARM_TENANT_ID: $(ARM_TENANT_ID)
-              STACK: $(variables.STACK)
+              STACK: ${{variables.STACK}}
