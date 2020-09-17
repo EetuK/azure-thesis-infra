@@ -53,7 +53,7 @@ stages:
             deploy:
               steps:
                 - script: |
-                    chmod +x scripts/*.sh
+                    chmod +x ./scripts/*.sh
                     ./scripts/run-pulumi.sh
                   displayName: "Install pulumi and run pulumi up"
                   name: pulumi
