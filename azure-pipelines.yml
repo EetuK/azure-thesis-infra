@@ -29,20 +29,18 @@ stages:
         steps:
           - script: echo ${{variables.STACK}}
           - task: Npm@1
-            displayName: infra - npm install
+            displayName: Pulumi npm install
             inputs:
               command: install
-              workingDir: "/"
           - task: Pulumi@1
-            displayName: infra - pulumi preview
+            displayName: Pulumi infra preview
             inputs:
               azureSubscription: "Azure thesis resource manager"
               command: "preview"
-              cwd: "/"
               stack: ${{variables.STACK}}
 
   - stage: deploy
-    displayName: Apply infra (Pulumi up)
+    displayName: Apply infra (pulumi up)
     dependsOn: preview
     variables:
       - group: common
