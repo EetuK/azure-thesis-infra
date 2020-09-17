@@ -26,8 +26,6 @@ stages:
     displayName: Preview infra
     variables:
       - group: common
-      - name: SHIT
-        value: $(System.PullRequest.TargetBranch)
     jobs:
       - job: previewInfra
         displayName: Preview infra (pulumi)
@@ -38,6 +36,8 @@ stages:
               echo ${{variables.ENVIRONMENT}}
               echo $(SHIT)
               echo $(Build.SourceBranchName)
+            env:
+              SHIT: $(System.PullRequest.TargetBranch)
           - task: Npm@1
             displayName: Pulumi npm install
             inputs:
