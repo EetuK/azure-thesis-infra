@@ -31,6 +31,11 @@ stages:
         displayName: Preview infra (pulumi)
         cancelTimeoutInMinutes: 7
         steps:
+          - script: | 
+              echo ${{variables.STACK}}
+              echo ${{variables.ENVIRONMENT}}
+              echo ${{System.PullRequest.TargetBranch}}
+              echo ${{Build.SourceBranchName}}
           - task: Npm@1
             displayName: Pulumi npm install
             inputs:
@@ -42,29 +47,30 @@ stages:
               command: "preview"
               stack: ${{variables.STACK}}
 
-  - stage: deploy
-    displayName: Apply infra (pulumi up)
-    dependsOn: preview
-    condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
-    variables:
-      - group: common
-    jobs:
-      - deployment: deployFrontendAndBackend
-        displayName: Deploy frontend and backend
-        environment: ${{variables.ENVIRONMENT}}
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
-                - task: Npm@1
-                  displayName: Pulumi npm install
-                  inputs:
-                    command: install
-                - task: Pulumi@1
-                  displayName: Pulumi infra preview
-                  inputs:
-                    azureSubscription: "Azure thesis resource manager"
-                    command: "up"
-                    args: --yes
-                    stack: ${{variables.STACK}}
+#  - stage: deploy
+#    displayName: Apply infra (pulumi up)
+#    dependsOn: preview
+#    condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
+#    variables:
+#      - group: common
+#    jobs:
+#      - deployment: deployFrontendAndBackend
+#        displayName: Deploy frontend and backend
+#        environment: ${{variables.ENVIRONMENT}}
+#        strategy:
+#          runOnce:
+#            deploy:
+#              steps:
+#                - checkout: self
+#                - task: Npm@1
+#                  displayName: Pulumi npm install
+#                  inputs:
+#                    command: install
+#                - task: Pulumi@1
+#                  displayName: Pulumi infra preview
+#                  inputs:
+#                    azureSubscription: "Azure thesis resource manager"
+#                    command: "up"
+#                    args: --yes
+#                    stack: ${{variables.STACK}}
+#
