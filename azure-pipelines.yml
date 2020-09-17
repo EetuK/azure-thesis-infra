@@ -12,6 +12,8 @@ pool:
 stages:
   - stage: preview
     displayName: Preview infra
+    variables:
+      - group: common
     jobs:
       - job: previewInfra
         displayName: Preview infra (pulumi)
@@ -33,6 +35,8 @@ stages:
   - stage: deploy
     displayName: Apply infra (Pulumi up)
     dependsOn: preview
+    variables:
+      - group: common
     jobs:
       - job: infrastructure
 
