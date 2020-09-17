@@ -9,11 +9,19 @@ trigger:
 pool:
   vmImage: "ubuntu-latest"
 
+variables:
+  ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'), endsWith(variables['System.PullRequest.TargetBranch'], 'develop') ) }}:
+  - name: STACK
+    value: dev
+  ${{ if or(eq(variables['Build.SourceBranchName'], 'master'), endsWith(variables['System.PullRequest.TargetBranch'], 'master') ) }}:
+  - name: STACK
+    value: prod
+  - group: common
+
+
 stages:
   - stage: preview
     displayName: Preview infra
-    variables:
-      - group: common
     jobs:
       - job: previewInfra
         displayName: Preview infra (pulumi)
@@ -35,8 +43,6 @@ stages:
   - stage: deploy
     displayName: Apply infra (Pulumi up)
     dependsOn: preview
-    variables:
-      - group: common
     jobs:
       - job: infrastructure
 
