@@ -53,22 +53,17 @@ stages:
             deploy:
               steps:
                 - checkout: self
-                - script: |
-                    ls
-                    cd scripts
-                    ls
-                - script: |
-                    chmod +x ./scripts/*.sh
-                    ./scripts/run-pulumi.sh
-                  displayName: "Install pulumi and run pulumi up"
-                  name: pulumi
-                  env:
-                    PULUMI_ACCESS_TOKEN: $(PULUMI_ACCESS_TOKEN)
-                    ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-                    ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-                    ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-                    ARM_TENANT_ID: $(ARM_TENANT_ID)
-                    STACK: ${{variables.STACK}}
+                - task: Npm@1
+                  displayName: Pulumi npm install
+                  inputs:
+                    command: install
+                - task: Pulumi@1
+                  displayName: Pulumi infra preview
+                  inputs:
+                    azureSubscription: "Azure thesis resource manager"
+                    command: "up"
+                    args: --yes
+                    stack: ${{variables.STACK}}
         
 #      - job: infrastructure
 #        pool:
