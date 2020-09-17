@@ -14,10 +14,10 @@ pool:
 
 variables:
   DEBUG: true
-  ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'), endsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/develop') ) }}:
+  ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'), endsWith(variables['System.PullRequest.TargetBranch'], 'develop') ) }}:
     STACK: dev
     ENVIRONMENT: infra-dev
-  ${{ if or(eq(variables['Build.SourceBranchName'], 'master'), endsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/master') ) }}:
+  ${{ if or(eq(variables['Build.SourceBranchName'], 'master'), endsWith(variables['System.PullRequest.TargetBranch'], 'master') ) }}:
     STACK: prod
     ENVIRONMENT: infra-prod
 
