@@ -9,7 +9,7 @@ curl -fsSL https://get.pulumi.com | sh
 export PATH=$PATH:$HOME/.pulumi/bin
 
 # commented out for release pipeline
-pushd infra/
+pushd /
 
 npm install
 
