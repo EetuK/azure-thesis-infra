@@ -11,7 +11,7 @@ pr:
 
 pool:
   vmImage: "ubuntu-latest"
-  
+
 stages:
   - stage: setEnvironment
     displayName: Set environment
@@ -69,10 +69,14 @@ stages:
     condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
     variables:
       - group: common
+      - name: ENVIRONMENT
+        value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+      - name: STACK
+        value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
     jobs:
       - deployment: pulumiUp
         displayName: Run pulumi up
-        environment: ${{variables.ENVIRONMENT}}
+        environment: $(variables.ENVIRONMENT)
         strategy:
           runOnce:
             deploy:
@@ -88,4 +92,4 @@ stages:
                     azureSubscription: "Azure thesis resource manager"
                     command: "up"
                     args: --yes
-                    stack: ${{variables.STACK}}
+                    stack: $(variables.STACK)
