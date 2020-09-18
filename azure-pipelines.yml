@@ -76,7 +76,7 @@ stages:
     jobs:
       - deployment: pulumiUp
         displayName: Run pulumi up
-        environment: $(variables.ENVIRONMENT)
+        environment: $(ENVIRONMENT)
         strategy:
           runOnce:
             deploy:
@@ -92,4 +92,4 @@ stages:
                     azureSubscription: "Azure thesis resource manager"
                     command: "up"
                     args: --yes
-                    stack: $(variables.STACK)
+                    stack: $(STACK)
