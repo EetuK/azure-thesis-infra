@@ -22,10 +22,31 @@ variables:
     ENVIRONMENT: infra-prod
 
 stages:
+  - stage: setEnvironment
+    displayName: Set environment
+    jobs:
+      - job: setEnv
+        displayName: Preview infra (pulumi)
+        cancelTimeoutInMinutes: 7
+        steps:
+          - script: | 
+              echo $(System.PullRequest.TargetBranch)
+              echo $(Build.SourceBranchName)
+              if $(Build.SourceBranchName) -is "master" -or $(System.PullRequest.TargetBranch) -is "master"
+              then
+                echo "branch: master"
+                echo "##vso[task.setvariable variable=environmentVariableGroup;isOutput=true]prod"
+              if $(Build.SourceBranchName) -is "develop" -or $(System.PullRequest.TargetBranch) -is "develop"
+                echo "branch: develop"
+                echo "##vso[task.setvariable variable=environmentVariableGroup;isOutput=true]dev"
+              fi
+            name: setEnv
+              
   - stage: preview
     displayName: Preview infra
     variables:
       - group: common
+      - group: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.environmentVariableGroup'] ]
     jobs:
       - job: previewInfra
         displayName: Preview infra (pulumi)
