@@ -12,7 +12,7 @@ pr:
 pool:
   vmImage: "ubuntu-latest"
 
-variables:
+#variables:
   #DEBUG: true
   #${{ if or(eq(variables['Build.SourceBranchName'], 'develop'),eq(System.PullRequest.TargetBranch, 'develop') ) }}:
   #  STACK: dev
