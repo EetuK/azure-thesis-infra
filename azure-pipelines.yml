@@ -45,8 +45,10 @@ stages:
   - stage: preview
     displayName: Preview infra
     variables:
+      - name: ENV
+        value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.environmentVariableGroup'] ]
       - group: common
-      - group: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.environmentVariableGroup'] ]
+      - group: ${ENV}
     jobs:
       - job: previewInfra
         displayName: Preview infra (pulumi)
