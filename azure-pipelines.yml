@@ -13,13 +13,13 @@ pool:
   vmImage: "ubuntu-latest"
 
 variables:
-  DEBUG: true
-  ${{ if or(eq(variables['Build.SourceBranchName'], 'develop'),eq(System.PullRequest.TargetBranch, 'develop') ) }}:
-    STACK: dev
-    ENVIRONMENT: infra-dev
-  ${{ if or(eq(variables['Build.SourceBranchName'], 'master'), eq(System.PullRequest.TargetBranch, 'master') ) }}:
-    STACK: prod
-    ENVIRONMENT: infra-prod
+  #DEBUG: true
+  #${{ if or(eq(variables['Build.SourceBranchName'], 'develop'),eq(System.PullRequest.TargetBranch, 'develop') ) }}:
+  #  STACK: dev
+  #  ENVIRONMENT: infra-dev
+  #${{ if or(eq(variables['Build.SourceBranchName'], 'master'), eq(System.PullRequest.TargetBranch, 'master') ) }}:
+  #  STACK: prod
+  #  ENVIRONMENT: infra-prod
 
 stages:
   - stage: setEnvironment
@@ -53,8 +53,8 @@ stages:
         cancelTimeoutInMinutes: 7
         steps:
           - script: | 
-              echo ${{variables.STACK}}
-              echo ${{variables.ENVIRONMENT}}
+              echo $(STACK)
+              echo $(ENVIRONMENT)
               echo $(System.PullRequest.TargetBranch)
               echo $(Build.SourceBranchName)
           - task: Npm@1
@@ -66,7 +66,7 @@ stages:
             inputs:
               azureSubscription: "Azure thesis resource manager"
               command: "preview"
-              stack: ${{variables.STACK}}
+              stack: $(STACK)
 
 #  - stage: deploy
 #    displayName: Apply infra (pulumi up)
