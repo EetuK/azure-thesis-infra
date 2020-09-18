@@ -37,6 +37,7 @@ stages:
                 echo "branch: master"
                 echo "##vso[task.setvariable variable=ENVIRONMENT;isOutput=true]prod"
                 echo "##vso[task.setvariable variable=STACK;isOutput=true]prod"
+              fi
               if [$(Build.SourceBranchName) -is "develop" -or $(System.PullRequest.TargetBranch) -is "develop"]
                 echo "branch: develop"
                 echo "##vso[task.setvariable variable=ENVIRONMENT;isOutput=true]dev"
