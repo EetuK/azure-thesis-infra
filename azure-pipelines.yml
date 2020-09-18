@@ -11,16 +11,7 @@ pr:
 
 pool:
   vmImage: "ubuntu-latest"
-
-#variables:
-  #DEBUG: true
-  #${{ if or(eq(variables['Build.SourceBranchName'], 'develop'),eq(System.PullRequest.TargetBranch, 'develop') ) }}:
-  #  STACK: dev
-  #  ENVIRONMENT: infra-dev
-  #${{ if or(eq(variables['Build.SourceBranchName'], 'master'), eq(System.PullRequest.TargetBranch, 'master') ) }}:
-  #  STACK: prod
-  #  ENVIRONMENT: infra-prod
-
+  
 stages:
   - stage: setEnvironment
     displayName: Set environment
@@ -30,17 +21,13 @@ stages:
         cancelTimeoutInMinutes: 7
         steps:
           - script: | 
-              echo $(System.PullRequest.TargetBranch)
-              echo $(Build.SourceBranchName)
               if [[ "$(Build.SourceBranchName)" == "master" || "$(System.PullRequest.TargetBranch)" == "master" ]]
               then
-                echo "branch: master"
                 echo "##vso[task.setvariable variable=ENVIRONMENT;isOutput=true]prod"
                 echo "##vso[task.setvariable variable=STACK;isOutput=true]prod"
               fi
               if [[ "$(Build.SourceBranchName)" == "develop" || "$(System.PullRequest.TargetBranch)" == "develop" ]]
               then
-                echo "branch: develop"
                 echo "##vso[task.setvariable variable=ENVIRONMENT;isOutput=true]dev"
                 echo "##vso[task.setvariable variable=STACK;isOutput=true]dev"
               fi
@@ -76,30 +63,29 @@ stages:
               command: "preview"
               stack: $(STACK)
 
-#  - stage: deploy
-#    displayName: Apply infra (pulumi up)
-#    dependsOn: preview
-#    condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
-#    variables:
-#      - group: common
-#    jobs:
-#      - deployment: deployFrontendAndBackend
-#        displayName: Deploy frontend and backend
-#        environment: ${{variables.ENVIRONMENT}}
-#        strategy:
-#          runOnce:
-#            deploy:
-#              steps:
-#                - checkout: self
-#                - task: Npm@1
-#                  displayName: Pulumi npm install
-#                  inputs:
-#                    command: install
-#                - task: Pulumi@1
-#                  displayName: Pulumi infra preview
-#                  inputs:
-#                    azureSubscription: "Azure thesis resource manager"
-#                    command: "up"
-#                    args: --yes
-#                    stack: ${{variables.STACK}}
-#
+  - stage: deploy
+    displayName: Deploy infra (pulumi)
+    dependsOn: preview
+    condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
+    variables:
+      - group: common
+    jobs:
+      - deployment: pulumiUp
+        displayName: Run pulumi up
+        environment: ${{variables.ENVIRONMENT}}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - task: Npm@1
+                  displayName: Pulumi npm install
+                  inputs:
+                    command: install
+                - task: Pulumi@1
+                  displayName: Pulumi up
+                  inputs:
+                    azureSubscription: "Azure thesis resource manager"
+                    command: "up"
+                    args: --yes
+                    stack: ${{variables.STACK}}
