@@ -1,9 +1,8 @@
-
-trigger: 
+trigger:
   branches:
-    include: 
-    - develop
-    - master
+    include:
+      - develop
+      - master
 pr:
   branches:
     include:
@@ -20,7 +19,7 @@ stages:
         displayName: Preview infra (pulumi)
         cancelTimeoutInMinutes: 7
         steps:
-          - script: | 
+          - script: |
               if [[ "$(Build.SourceBranchName)" == "master" || "$(System.PullRequest.TargetBranch)" == "master" ]]
               then
                 echo "##vso[task.setvariable variable=ENVIRONMENT;isOutput=true]infra-prod"
@@ -32,7 +31,7 @@ stages:
                 echo "##vso[task.setvariable variable=STACK;isOutput=true]dev"
               fi
             name: setEnv
-              
+
   - stage: preview
     displayName: Preview infra
     variables:
@@ -41,13 +40,13 @@ stages:
         value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
       - name: STACK
         value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
-      
+
     jobs:
       - job: previewInfra
         displayName: Preview infra (pulumi)
         cancelTimeoutInMinutes: 7
         steps:
-          - script: | 
+          - script: |
               echo $(STACK)
               echo $(ENVIRONMENT)
               echo $(System.PullRequest.TargetBranch)
@@ -76,6 +75,12 @@ stages:
     jobs:
       - deployment: pulumiUp
         displayName: Run pulumi up
+        variables:
+          - group: common
+          - name: ENVIRONMENT
+            value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+          - name: STACK
+            value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
         environment: $(ENVIRONMENT)
         strategy:
           runOnce:
