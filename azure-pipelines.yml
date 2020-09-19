@@ -11,6 +11,10 @@ pr:
 pool:
   vmImage: "ubuntu-latest"
 
+variables:
+  artifactName: ReleaseArtifact
+  releaseTemplate: "azure-pipelines.deploy.yaml"
+
 stages:
   - stage: setEnvironment
     displayName: Set environment
@@ -62,39 +66,49 @@ stages:
               command: "preview"
               stack: $(STACK)
 
-  - stage: deploy
-    displayName: Deploy infra (pulumi)
+  - stage: "deploy-dev"
+    displayName: "Deploy to dev"
     dependsOn: preview
-    condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
-    variables:
-      - group: common
-      - name: ENVIRONMENT
-        value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
-      - name: STACK
-        value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
     jobs:
-      - deployment: pulumiUp
-        displayName: Run pulumi up
-        variables:
-          - group: common
-          - name: ENVIRONMENT
-            value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
-          - name: STACK
-            value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
-        environment: $(ENVIRONMENT)
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
-                - task: Npm@1
-                  displayName: Pulumi npm install
-                  inputs:
-                    command: install
-                - task: Pulumi@1
-                  displayName: Pulumi up
-                  inputs:
-                    azureSubscription: "Azure thesis resource manager"
-                    command: "up"
-                    args: --yes
-                    stack: $(STACK)
+      - template: ${{ variables.releaseTemplate }}
+        parameters:
+          variableGroup: "common"
+          environment: "infra-dev"
+          stack: "dev"
+
+  # - stage: deploy
+  #   displayName: Deploy infra (pulumi)
+  #   dependsOn: preview
+  #   condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
+  #   variables:
+  #     - group: common
+  #     - name: ENVIRONMENT
+  #       value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+  #     - name: STACK
+  #       value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
+  #   jobs:
+  #     - deployment: pulumiUp
+  #       displayName: Run pulumi up
+  #       variables:
+  #         - group: common
+  #         - name: ENVIRONMENT
+  #           value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+  #         - name: STACK
+  #           value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
+  #       environment: ${{ variables.ENVIRONMENT }}
+  #       strategy:
+  #         runOnce:
+  #           deploy:
+  #             steps:
+  #               - checkout: self
+  #               - task: Npm@1
+  #                 displayName: Pulumi npm install
+  #                 inputs:
+  #                   command: install
+  #               - task: Pulumi@1
+  #                 displayName: Pulumi up
+  #                 inputs:
+  #                   azureSubscription: "Azure thesis resource manager"
+  #                   command: "up"
+  #                   args: --yes
+  #                   stack: $(STACK)

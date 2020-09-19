@@ -1,0 +1,32 @@
+parameters:
+  - name: commonVariablesGroup
+    type: string
+
+  - name: environment
+    type: string
+
+  - name: stack
+    type: string
+
+jobs:
+  - deployment: deploy-infra
+    displayName: "Deploy infra"
+    variables:
+      - group: ${{ parameters.commonVariablesGroup }}
+    environment: ${{ parameters.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            - task: Npm@1
+              displayName: Pulumi npm install
+              inputs:
+                command: install
+            - task: Pulumi@1
+              displayName: Pulumi up
+              inputs:
+                azureSubscription: "Azure thesis resource manager"
+                command: "up"
+                args: --yes
+                stack: ${{ parameters.stack }}
