@@ -72,7 +72,6 @@ stages:
         value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
       - name: STACK
         value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
-    parameters:
 
     jobs:
       - deployment: pulumiUp
