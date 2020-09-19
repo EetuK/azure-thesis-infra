@@ -76,12 +76,12 @@ stages:
     jobs:
       - deployment: pulumiUp
         displayName: Run pulumi up
-        variables:
-          - group: common
-          - name: ENVIRONMENT
-            value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
-          - name: STACK
-            value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
+        #variables:
+        #  - group: common
+        #  - name: ENVIRONMENT
+        #    value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+        #  - name: STACK
+        #    value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
         environment: ${{variables.ENVIRONMENT}}
         strategy:
           runOnce:
