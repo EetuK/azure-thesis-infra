@@ -82,7 +82,7 @@ stages:
             value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
           - name: STACK
             value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
-        environment: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+        environment: $(ENVIRONMENT)
         strategy:
           runOnce:
             deploy:
