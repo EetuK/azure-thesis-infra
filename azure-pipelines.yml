@@ -90,7 +90,7 @@ stages:
         #    value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
         #  - name: STACK
         #    value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
-        environment: ${{variables.ENVIRONMENT}}
+        environment: $(variables.ENVIRONMENT)
         strategy:
           runOnce:
             deploy:
