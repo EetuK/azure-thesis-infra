@@ -73,7 +73,7 @@ stages:
       - name: STACK
         value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
     parameters:
-      
+
     jobs:
       - deployment: pulumiUp
         displayName: Run pulumi up
@@ -83,7 +83,7 @@ stages:
             value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
           - name: STACK
             value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
-        environment: $(ENVIRONMENT)
+        environment: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
         strategy:
           runOnce:
             deploy:
