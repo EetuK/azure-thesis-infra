@@ -72,6 +72,8 @@ stages:
         value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
       - name: STACK
         value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
+    parameters:
+      
     jobs:
       - deployment: pulumiUp
         displayName: Run pulumi up
@@ -87,6 +89,11 @@ stages:
             deploy:
               steps:
                 - checkout: self
+                - script: |
+                      echo $(STACK)
+                      echo $(ENVIRONMENT)
+                      echo $(System.PullRequest.TargetBranch)
+                      echo $(Build.SourceBranchName)
                 - task: Npm@1
                   displayName: Pulumi npm install
                   inputs:
