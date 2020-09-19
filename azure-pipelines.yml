@@ -82,7 +82,7 @@ stages:
             value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
           - name: STACK
             value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
-        environment: $(ENVIRONMENT)
+        environment: ${{variables.ENVIRONMENT}}
         strategy:
           runOnce:
             deploy:
@@ -98,7 +98,7 @@ stages:
                   inputs:
                     command: install
                 - task: Pulumi@1
-                  displayName: Pulumi up
+                  displayName: Pulumi up ($(ENVIRONMENT))
                   inputs:
                     azureSubscription: "Azure thesis resource manager"
                     command: "up"
