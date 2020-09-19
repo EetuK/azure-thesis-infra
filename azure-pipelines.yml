@@ -69,6 +69,7 @@ stages:
   - stage: "deploy-dev"
     displayName: "Deploy to dev"
     dependsOn: preview
+    condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
     jobs:
       - template: ${{ variables.releaseTemplate }}
         parameters:
