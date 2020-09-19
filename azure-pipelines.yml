@@ -69,13 +69,24 @@ stages:
   - stage: "deployDev"
     displayName: "Deploy to dev"
     dependsOn: preview
-    condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
+    condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop') )}}
     jobs:
       - template: ${{ variables.releaseTemplate }}
         parameters:
           commonVariablesGroup: "common"
           environment: "infra-dev"
           stack: "dev"
+
+  - stage: "deployProd"
+    displayName: "Deploy to prod"
+    dependsOn: preview
+    condition: ${{or( eq(variables['Build.SourceBranchName'], 'master') )}}
+    jobs:
+      - template: ${{ variables.releaseTemplate }}
+        parameters:
+          commonVariablesGroup: "common"
+          environment: "infra-prod"
+          stack: "prod"
 
   # - stage: deploy
   #   displayName: Deploy infra (pulumi)
