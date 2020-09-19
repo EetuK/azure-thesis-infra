@@ -74,6 +74,14 @@ stages:
         value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
 
     jobs:
+      - job: asd
+        displayName: Asd
+        steps:
+          - script: |
+              echo $(STACK)
+              echo $(ENVIRONMENT)
+              echo $(System.PullRequest.TargetBranch)
+              echo $(Build.SourceBranchName)
       - deployment: pulumiUp
         displayName: Run pulumi up
         #variables:
