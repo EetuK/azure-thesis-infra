@@ -73,7 +73,7 @@ stages:
     jobs:
       - template: ${{ variables.releaseTemplate }}
         parameters:
-          variableGroup: "common"
+          commonVariablesGroup: "common"
           environment: "infra-dev"
           stack: "dev"
 
