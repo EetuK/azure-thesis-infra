@@ -1,53 +1,126 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-  - develop
+  branches:
+    include:
+      - develop
+      - master
+pr:
+  branches:
+    include:
+      - "*"
 
 pool:
   vmImage: "ubuntu-latest"
 
+variables:
+  artifactName: ReleaseArtifact
+  releaseTemplate: "azure-pipelines.deploy.yaml"
+
 stages:
+  - stage: setEnvironment
+    displayName: Set environment
+    jobs:
+      - job: setEnv
+        displayName: Preview infra (pulumi)
+        cancelTimeoutInMinutes: 7
+        steps:
+          - script: |
+              if [[ "$(Build.SourceBranchName)" == "master" || "$(System.PullRequest.TargetBranch)" == "master" ]]
+              then
+                echo "##vso[task.setvariable variable=ENVIRONMENT;isOutput=true]infra-prod"
+                echo "##vso[task.setvariable variable=STACK;isOutput=true]prod"
+              fi
+              if [[ "$(Build.SourceBranchName)" == "develop" || "$(System.PullRequest.TargetBranch)" == "develop" ]]
+              then
+                echo "##vso[task.setvariable variable=ENVIRONMENT;isOutput=true]infra-dev"
+                echo "##vso[task.setvariable variable=STACK;isOutput=true]dev"
+              fi
+            name: setEnv
+
   - stage: preview
     displayName: Preview infra
+    variables:
+      - group: common
+      - name: ENVIRONMENT
+        value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+      - name: STACK
+        value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
+
     jobs:
       - job: previewInfra
         displayName: Preview infra (pulumi)
         cancelTimeoutInMinutes: 7
         steps:
+          - script: |
+              echo $(STACK)
+              echo $(ENVIRONMENT)
+              echo $(System.PullRequest.TargetBranch)
+              echo $(Build.SourceBranchName)
           - task: Npm@1
-            displayName: infra - npm install
+            displayName: Pulumi npm install
             inputs:
               command: install
-              workingDir: "/"
           - task: Pulumi@1
-            displayName: infra - pulumi preview
+            displayName: Pulumi infra preview
             inputs:
               azureSubscription: "Azure thesis resource manager"
               command: "preview"
-              cwd: "/"
-              stack: "$()"
+              stack: $(STACK)
 
-  - stage: deploy
-    displayName: Apply infra (Pulumi up)
+  - stage: "deployDev"
+    displayName: "Deploy to dev"
     dependsOn: preview
-    condition: 
+    condition: ${{ eq(variables['Build.SourceBranchName'], 'develop') }}
     jobs:
-      - job: infrastructure
-        pool:
-          vmImage: "ubuntu-16.04"
-        steps:
-          - script: |
-              chmod +x infra/scripts/*.sh
-              ./scripts/run-pulumi.sh
-            displayName: "Install pulumi and run pulumi up"
-            name: pulumi
-            env:
-              PULUMI_ACCESS_TOKEN: $(common.PULUMI_ACCESS_TOKEN)
-              ARM_CLIENT_ID: $(common.ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(common.ARM_CLIENT_SECRET)
-              ARM_SUBSCRIPTION_ID: $(common.ARM_SUBSCRIPTION_ID)
-              ARM_TENANT_ID: $(common.ARM_TENANT_ID)
-              STACK: $(STACK)
+      - template: ${{ variables.releaseTemplate }}
+        parameters:
+          commonVariablesGroup: "common"
+          environment: "infra-dev"
+          stack: "dev"
+
+  - stage: "deployProd"
+    displayName: "Deploy to prod"
+    dependsOn: preview
+    condition: ${{ eq(variables['Build.SourceBranchName'], 'master' )}}
+    jobs:
+      - template: ${{ variables.releaseTemplate }}
+        parameters:
+          commonVariablesGroup: "common"
+          environment: "infra-prod"
+          stack: "prod"
+
+  # - stage: deploy
+  #   displayName: Deploy infra (pulumi)
+  #   dependsOn: preview
+  #   condition: ${{or( eq(variables['Build.SourceBranchName'], 'develop'), eq(variables['Build.SourceBranchName'], 'master') )}}
+  #   variables:
+  #     - group: common
+  #     - name: ENVIRONMENT
+  #       value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+  #     - name: STACK
+  #       value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
+  #   jobs:
+  #     - deployment: pulumiUp
+  #       displayName: Run pulumi up
+  #       variables:
+  #         - group: common
+  #         - name: ENVIRONMENT
+  #           value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.ENVIRONMENT'] ]
+  #         - name: STACK
+  #           value: $[ stageDependencies.setEnvironment.setEnv.outputs['setEnv.STACK'] ]
+  #       environment: ${{ variables.ENVIRONMENT }}
+  #       strategy:
+  #         runOnce:
+  #           deploy:
+  #             steps:
+  #               - checkout: self
+  #               - task: Npm@1
+  #                 displayName: Pulumi npm install
+  #                 inputs:
+  #                   command: install
+  #               - task: Pulumi@1
+  #                 displayName: Pulumi up
+  #                 inputs:
+  #                   azureSubscription: "Azure thesis resource manager"
+  #                   command: "up"
+  #                   args: --yes
+  #                   stack: $(STACK)
