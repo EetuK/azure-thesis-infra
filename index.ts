@@ -38,38 +38,6 @@ const vault = new azure.keyvault.KeyVault(globalName, {
   ],
 });
 
-const appServicePlan = new azure.appservice.Plan(globalName, {
-  name: globalName,
-  resourceGroupName: resourceGroup.name,
-  kind: "Linux",
-  reserved: true,
-  location: "NorthEurope",
-  sku: {
-    tier: "Free",
-    size: "F1",
-  },
-});
-
-const appServicePlanId = appServicePlan.id;
-
-const clientAppService = new azure.appservice.AppService(
-  `${globalName}-client`,
-  {
-    name: `${globalName}-client`,
-    appServicePlanId,
-    resourceGroupName,
-  }
-);
-
-const serverAppService = new azure.appservice.AppService(
-  `${globalName}-server`,
-  {
-    name: `${globalName}-server`,
-    appServicePlanId,
-    resourceGroupName,
-  }
-);
-
 // Create admin password with random generator
 const adminPassword = new random.RandomPassword("password", {
   length: 24,
@@ -87,6 +55,14 @@ const sqlServer = new azure.sql.SqlServer(globalName, {
   version: "12.0",
 });
 
+const db = new azure.sql.Database(globalName, {
+  name: globalName,
+  resourceGroupName: resourceGroup.name,
+  serverName: sqlServer.name,
+  edition: "Free",
+  requestedServiceObjectiveName: "S0",
+});
+
 // Add new secrets for sql server admin
 const adminUsernameSecret = new azure.keyvault.Secret("sqlAdminUsername", {
   name: "sqlAdminUsername",
@@ -99,5 +75,40 @@ const adminPasswordSecret = new azure.keyvault.Secret("sqlAdminPassword", {
   keyVaultId: vault.id,
   value: adminPassword,
 });
+
+const appServicePlan = new azure.appservice.Plan(globalName, {
+  name: globalName,
+  resourceGroupName: resourceGroup.name,
+  kind: "Linux",
+  reserved: true,
+  location: "NorthEurope",
+  sku: {
+    tier: "Free",
+    size: "F1",
+  },
+});
+
+const appServicePlanId = appServicePlan.id;
+
+const serverAppService = new azure.appservice.AppService(
+  `${globalName}-server`,
+  {
+    name: `${globalName}-server`,
+    appServicePlanId,
+    resourceGroupName,
+  }
+);
+
+const clientAppService = new azure.appservice.AppService(
+  `${globalName}-client`,
+  {
+    name: `${globalName}-client`,
+    appServicePlanId,
+    resourceGroupName,
+    appSettings: {
+      API_URL: `https://${serverAppService.name}.azurewebsites.net`,
+    },
+  }
+);
 
 export {};
