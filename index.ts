@@ -60,7 +60,6 @@ const db = new azure.sql.Database(globalName, {
   resourceGroupName: resourceGroup.name,
   serverName: sqlServer.name,
   edition: "Free",
-  requestedServiceObjectiveName: "S0",
 });
 
 // Add new secrets for sql server admin
