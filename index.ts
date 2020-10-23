@@ -2,9 +2,10 @@ import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
 import * as random from "@pulumi/random";
 
-// use first 10 characters of the stackname as prefix for resource names
+// use first 10 characters of the stackname as prefix for resource names e.g. "dev"
 const prefix = pulumi.getStack().substring(0, 9);
 
+// Global name for the services
 const globalName = `${prefix}-azure-thesis`;
 
 // Create an Azure Resource Group with prefix e.g. dev-azure-thesis
@@ -15,14 +16,12 @@ const resourceGroup = new azure.core.ResourceGroup(globalName, {
 const resourceGroupName = resourceGroup.name;
 
 // Get azure config
-// https://www.pulumi.com/blog/7-ways-to-deal-with-application-secrets-in-azure/
 const clientConfig = azure.core.getClientConfig({ async: true });
 const tenantId = clientConfig.then((config) => config.tenantId);
 const currentPrincipal = clientConfig.then((config) => config.objectId);
 
-// Keyvalt for saving secrets
-// https://www.pulumi.com/blog/7-ways-to-deal-with-application-secrets-in-azure/
-const vault = new azure.keyvault.KeyVault(globalName, {
+// Create a keyvalt for saving secrets
+const keyVault = new azure.keyvault.KeyVault(globalName, {
   name: globalName,
   resourceGroupName: resourceGroup.name,
   skuName: "standard",
@@ -65,13 +64,13 @@ const db = new azure.sql.Database(globalName, {
 // Add new secrets for sql server admin
 const adminUsernameSecret = new azure.keyvault.Secret("sqlAdminUsername", {
   name: "sqlAdminUsername",
-  keyVaultId: vault.id,
+  keyVaultId: keyVault.id,
   value: adminUsername,
 });
 
 const adminPasswordSecret = new azure.keyvault.Secret("sqlAdminPassword", {
   name: "sqlAdminPassword",
-  keyVaultId: vault.id,
+  keyVaultId: keyVault.id,
   value: adminPassword,
 });
 
@@ -95,8 +94,21 @@ const serverAppService = new azure.appservice.AppService(
     name: `${globalName}-server`,
     appServicePlanId,
     resourceGroupName,
+    identity: {
+      type: "SystemAssigned"
+    }
   }
 );
+
+const ServerKeyvaultAccessPolicy = new azure.keyvault.AccessPolicy(
+  `${globalName}-server`,
+  {
+    keyVaultId: keyVault.id,
+    applicationId: serverAppService.id,
+    objectId: serverAppService.identity.principalId,
+    tenantId: serverAppService.identity.tenantId
+  }
+)
 
 const clientAppService = new azure.appservice.AppService(
   `${globalName}-client`,
