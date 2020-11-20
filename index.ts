@@ -112,8 +112,6 @@ const ServerKeyvaultAccessPolicy = new azure.keyvault.AccessPolicy(
   }
 );
 
-const apiUrl = `https://${serverAppService.name}.azurewebsites.net`;
-
 const clientAppService = new azure.appservice.AppService(
   `${globalName}-client`,
   {
