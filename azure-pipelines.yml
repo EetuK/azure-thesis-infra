@@ -74,7 +74,7 @@ stages:
   - stage: "deployProd"
     displayName: "Deploy to prod"
     dependsOn: preview
-    condition: and(success(), eq(variables['Build.SourceBranchName'], 'master'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
     jobs:
       - template: ${{ variables.releaseTemplate }}
         parameters:
