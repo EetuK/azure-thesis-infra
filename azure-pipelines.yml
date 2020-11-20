@@ -63,7 +63,7 @@ stages:
   - stage: "deployDev"
     displayName: "Deploy to dev"
     dependsOn: preview
-    condition: and(success(), eq(variables['Build.SourceBranchName'], 'develop'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'develop'))
     jobs:
       - template: ${{ variables.releaseTemplate }}
         parameters:
