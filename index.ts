@@ -101,20 +101,18 @@ const serverAppService = new azure.appservice.AppService(
   }
 );
 
-// const serverAppServiceId = serverAppService.id;
-// // const serverAppServiceObjectId = serverAppService.identity.principalId;
-// // const serverAppServiceTenantId = serverAppService.identity.tenantId;
-
 // Access policy for server to access keyvault
-// const ServerKeyvaultAccessPolicy = new azure.keyvault.AccessPolicy(
-//   `${globalName}-server`,
-//   {
-//     keyVaultId: keyVault.id,
-//     objectId: serverAppService.identity.principalId,
-//     tenantId: serverAppService.identity.tenantId,
-//     secretPermissions: ["get"],
-//   }
-// );
+const ServerKeyvaultAccessPolicy = new azure.keyvault.AccessPolicy(
+  `${globalName}-server`,
+  {
+    keyVaultId: keyVault.id,
+    objectId: serverAppService.identity.principalId,
+    tenantId: serverAppService.identity.tenantId,
+    secretPermissions: ["get"],
+  }
+);
+
+const apiUrl = `https://${serverAppService.name}.azurewebsites.net`;
 
 const clientAppService = new azure.appservice.AppService(
   `${globalName}-client`,
@@ -122,9 +120,6 @@ const clientAppService = new azure.appservice.AppService(
     name: `${globalName}-client`,
     appServicePlanId,
     resourceGroupName,
-    appSettings: {
-      API_URL: `https://${serverAppService.name}.azurewebsites.net`, // This could be also added in the pipeline
-    },
   }
 );
 
