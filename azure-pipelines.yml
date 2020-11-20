@@ -49,11 +49,6 @@ stages:
         displayName: Preview infra (pulumi)
         cancelTimeoutInMinutes: 7
         steps:
-          - script: |
-              echo $(STACK)
-              echo $(ENVIRONMENT)
-              echo $(System.PullRequest.TargetBranch)
-              echo $(Build.SourceBranchName)
           - task: Npm@1
             displayName: Pulumi npm install
             inputs:
@@ -68,7 +63,7 @@ stages:
   - stage: "deployDev"
     displayName: "Deploy to dev"
     dependsOn: preview
-    condition: eq(variables['Build.SourceBranchName'], 'develop')
+    condition: and(success(), eq(variables['Build.SourceBranchName'], 'develop'))
     jobs:
       - template: ${{ variables.releaseTemplate }}
         parameters:
@@ -79,7 +74,7 @@ stages:
   - stage: "deployProd"
     displayName: "Deploy to prod"
     dependsOn: preview
-    condition: eq(variables['Build.SourceBranchName'], 'master')
+    condition: and(success(), eq(variables['Build.SourceBranchName'], 'master'))
     jobs:
       - template: ${{ variables.releaseTemplate }}
         parameters:

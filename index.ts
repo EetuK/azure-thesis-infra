@@ -2,7 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
 import * as random from "@pulumi/random";
 
-// use first 10 characters of the stackname as prefix for resource names e.g. "dev"
+// use first 10 characters of the stack name as prefix for resource names e.g. "dev"
 const prefix = pulumi.getStack().substring(0, 9);
 
 // Global name for the services
@@ -10,7 +10,7 @@ const globalName = `${prefix}-azure-thesis`;
 
 // Create an Azure Resource Group with prefix e.g. dev-azure-thesis
 const resourceGroup = new azure.core.ResourceGroup(globalName, {
-  name: globalName,
+  name: globalName, // Name must be applied twice
   location: "NorthEurope",
 });
 const resourceGroupName = resourceGroup.name;
@@ -44,7 +44,7 @@ const adminPassword = new random.RandomPassword("password", {
 }).result;
 const adminUsername = "sqladmin";
 
-// Create SQL server
+// Create SQL Server
 const sqlServer = new azure.sql.SqlServer(globalName, {
   name: globalName,
   resourceGroupName: resourceGroup.name,
@@ -54,6 +54,7 @@ const sqlServer = new azure.sql.SqlServer(globalName, {
   version: "12.0",
 });
 
+// Create SQL Database for the server
 const db = new azure.sql.Database(globalName, {
   name: globalName,
   resourceGroupName: resourceGroup.name,
@@ -67,13 +68,13 @@ const adminUsernameSecret = new azure.keyvault.Secret("sqlAdminUsername", {
   keyVaultId: keyVault.id,
   value: adminUsername,
 });
-
 const adminPasswordSecret = new azure.keyvault.Secret("sqlAdminPassword", {
   name: "sqlAdminPassword",
   keyVaultId: keyVault.id,
   value: adminPassword,
 });
 
+// App Service Plan for the app services
 const appServicePlan = new azure.appservice.Plan(globalName, {
   name: globalName,
   resourceGroupName: resourceGroup.name,
@@ -95,20 +96,25 @@ const serverAppService = new azure.appservice.AppService(
     appServicePlanId,
     resourceGroupName,
     identity: {
-      type: "SystemAssigned"
-    }
+      type: "SystemAssigned", // Must be on so that app service can have system assigned access to keyvault etc.
+    },
   }
 );
 
-const ServerKeyvaultAccessPolicy = new azure.keyvault.AccessPolicy(
-  `${globalName}-server`,
-  {
-    keyVaultId: keyVault.id,
-    applicationId: serverAppService.id,
-    objectId: serverAppService.identity.principalId,
-    tenantId: serverAppService.identity.tenantId
-  }
-)
+// const serverAppServiceId = serverAppService.id;
+// // const serverAppServiceObjectId = serverAppService.identity.principalId;
+// // const serverAppServiceTenantId = serverAppService.identity.tenantId;
+
+// Access policy for server to access keyvault
+// const ServerKeyvaultAccessPolicy = new azure.keyvault.AccessPolicy(
+//   `${globalName}-server`,
+//   {
+//     keyVaultId: keyVault.id,
+//     objectId: serverAppService.identity.principalId,
+//     tenantId: serverAppService.identity.tenantId,
+//     secretPermissions: ["get"],
+//   }
+// );
 
 const clientAppService = new azure.appservice.AppService(
   `${globalName}-client`,
@@ -117,7 +123,7 @@ const clientAppService = new azure.appservice.AppService(
     appServicePlanId,
     resourceGroupName,
     appSettings: {
-      API_URL: `https://${serverAppService.name}.azurewebsites.net`,
+      API_URL: `https://${serverAppService.name}.azurewebsites.net`, // This could be also added in the pipeline
     },
   }
 );
