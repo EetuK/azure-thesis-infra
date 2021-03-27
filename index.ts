@@ -8,22 +8,22 @@ const prefix = pulumi.getStack().substring(0, 9);
 // Global name for the services
 const globalName = `${prefix}-azure-thesis`;
 
-// Create an Azure Resource Group with prefix e.g. dev-azure-thesis
-const resourceGroup = new azure.core.ResourceGroup(globalName, {
-  name: globalName, // Name must be applied twice
-  location: "NorthEurope",
-});
-const resourceGroupName = resourceGroup.name;
-
 // Get azure config
 const clientConfig = azure.core.getClientConfig({ async: true });
 const tenantId = clientConfig.then((config) => config.tenantId);
 const currentPrincipal = clientConfig.then((config) => config.objectId);
 
+// Create an Azure Resource Group
+const resourceGroup = new azure.core.ResourceGroup(globalName, {
+  name: globalName, // Name must be applied twices
+  location: "NorthEurope",
+});
+const resourceGroupName = resourceGroup.name;
+
 // Create a keyvalt for saving secrets
 const keyVault = new azure.keyvault.KeyVault(globalName, {
   name: globalName,
-  resourceGroupName: resourceGroup.name,
+  resourceGroupName,
   skuName: "standard",
   tenantId: tenantId,
   accessPolicies: [
@@ -47,7 +47,7 @@ const adminUsername = "sqladmin";
 // Create SQL Server
 const sqlServer = new azure.sql.SqlServer(globalName, {
   name: globalName,
-  resourceGroupName: resourceGroup.name,
+  resourceGroupName,
   // The login and password are required but won't be used in our application
   administratorLogin: adminUsername,
   administratorLoginPassword: adminPassword,
@@ -57,7 +57,7 @@ const sqlServer = new azure.sql.SqlServer(globalName, {
 // Create SQL Database for the server
 const db = new azure.sql.Database(globalName, {
   name: globalName,
-  resourceGroupName: resourceGroup.name,
+  resourceGroupName,
   serverName: sqlServer.name,
   edition: "Free",
 });
@@ -77,7 +77,7 @@ const adminPasswordSecret = new azure.keyvault.Secret("sqlAdminPassword", {
 // App Service Plan for the app services
 const appServicePlan = new azure.appservice.Plan(globalName, {
   name: globalName,
-  resourceGroupName: resourceGroup.name,
+  resourceGroupName,
   kind: "Linux",
   reserved: true,
   location: "NorthEurope",
@@ -86,8 +86,16 @@ const appServicePlan = new azure.appservice.Plan(globalName, {
     size: "F1",
   },
 });
-
 const appServicePlanId = appServicePlan.id;
+
+const clientAppService = new azure.appservice.AppService(
+  `${globalName}-client`,
+  {
+    name: `${globalName}-client`,
+    appServicePlanId,
+    resourceGroupName,
+  }
+);
 
 const serverAppService = new azure.appservice.AppService(
   `${globalName}-server`,
@@ -109,15 +117,6 @@ const ServerKeyvaultAccessPolicy = new azure.keyvault.AccessPolicy(
     objectId: serverAppService.identity.principalId,
     tenantId: serverAppService.identity.tenantId,
     secretPermissions: ["get"],
-  }
-);
-
-const clientAppService = new azure.appservice.AppService(
-  `${globalName}-client`,
-  {
-    name: `${globalName}-client`,
-    appServicePlanId,
-    resourceGroupName,
   }
 );
 
