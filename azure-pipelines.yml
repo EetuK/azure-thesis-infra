@@ -16,6 +16,9 @@ stages:
               if [[ "$(Build.SourceBranchName)" == "develop" || "$(System.PullRequest.TargetBranch)" == "develop" ]]
               then
                 echo "##vso[task.setvariable variable=STACK;isOutput=true]dev"
+              if [[ "$(Build.SourceBranchName)" == "master" || "$(System.PullRequest.TargetBranch)" == "master" ]]
+              then
+                echo "##vso[task.setvariable variable=STACK;isOutput=true]prod"
               fi
             name: setEnv
 
@@ -50,3 +53,14 @@ stages:
           commonVariablesGroup: "common"
           environment: "infra-dev"
           stack: "dev"
+
+  - stage: "deployProd"
+    displayName: "Deploy to prod"
+    dependsOn: preview
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+    jobs:
+      - template: "azure-pipelines.deploy.yaml"
+        parameters:
+          commonVariablesGroup: "common"
+          environment: "infra-prod"
+          stack: "prod"
